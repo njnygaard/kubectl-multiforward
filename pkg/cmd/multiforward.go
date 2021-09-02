@@ -3,7 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
+	"github.com/njnygaard/kubectl-multiforward/forward"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -11,29 +12,92 @@ import (
 )
 
 var (
-	errNoConfig    = fmt.Errorf("no config is currently set, either ~/.multiforward.yaml or ./.multiforward.yaml")
-	errUnspecified = fmt.Errorf("something went wrong. do you have your config file in ~/.multiforward.yaml or ./.multiforward.yaml")
+	errGroupNotSpecified = "please specify a group found in your config (for you, one of these choices: \"%s\")"
+	errNoConfig          = fmt.Errorf("no config is currently set, either ~/.multiforward.yaml or ./.multiforward.yaml")
+	errMalformedConfig   = fmt.Errorf("could not unmarshal config found in either ~/.multiforward.yaml or ./.multiforward.yaml")
+	errUnspecified       = fmt.Errorf("something went wrong. do you have your config file in ~/.multiforward.yaml or ./.multiforward.yaml")
 )
+
+type Config struct {
+	Groups []Group
+}
+
+type Group struct {
+	Name     string
+	Services []Service
+}
+
+type Service struct {
+	DisplayName string
+	Port        uint
+	Namespace   string
+	Name        string
+}
 
 // NewCmdNamespace provides a cobra command wrapping NamespaceOptions
 func NewCmdNamespace(streams genericclioptions.IOStreams) *cobra.Command {
 	// o := NewNamespaceOptions(streams)
 
 	cmd := &cobra.Command{
-		Use:          "ns [new-namespace] [flags]",
-		Short:        "View or set the current namespace",
-		Example:      "kubectl multiforward",
+		Use:          "multiforward <group>",
+		Short:        "forward to services specified in ~/.multiforward.yaml or .multiforward.yaml",
+		Example:      "kubectl multiforward [group]",
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) (err error) {
 
-			logger := logrus.New()
+			// logger := logrus.New()
+
+			var config Config
 
 			err = Configure()
 			if err != nil {
 				return errNoConfig
 			}
 
-			logger.Info("yeah")
+			err = viper.Unmarshal(&config)
+			if err != nil {
+				return errMalformedConfig
+			}
+
+			var groupNames string
+			for i, v := range config.Groups {
+				if i == 0 {
+					groupNames = v.Name
+					continue
+				}
+				groupNames += ", " + v.Name
+			}
+
+			if len(args) == 0 || args[0] == "" {
+				return fmt.Errorf(errGroupNotSpecified, groupNames)
+			}
+
+			var serviceGroup []Service
+
+			for _, v := range config.Groups {
+				if v.Name == args[0] {
+					serviceGroup = v.Services
+				}
+			}
+
+			// TODO Populate from configuration
+			var serviceMapping = map[string]forward.ServiceMapping{
+				// "Alertmanager":  {Port: 9093, Namespace: "monitoring-prometheus", Identifier: "alertmanager-operated"},
+				// "Prometheus":    {Port: 9090, Namespace: "monitoring-prometheus", Identifier: "prometheus-operated"},
+				// "Grafana":       {Port: 3000, Namespace: "monitoring-prometheus", Identifier: "prometheus-staging-grafana"},
+				// "Kibana":        {Port: 5601, Namespace: "monitoring-eck", Identifier: "kibana-kb-http"},
+				// "Elasticsearch": {Port: 9200, Namespace: "monitoring-eck", Identifier: "elasticsearch-es-http"},
+			}
+
+			for _, v := range serviceGroup {
+				var mapping forward.ServiceMapping
+				mapping.Identifier = v.Name
+				mapping.Namespace = v.Namespace
+				mapping.Port = int(v.Port)
+				serviceMapping[v.DisplayName] = mapping
+			}
+
+			forward.Forward(serviceMapping)
 
 			return nil
 		},
