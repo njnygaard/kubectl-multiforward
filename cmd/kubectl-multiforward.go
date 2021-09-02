@@ -1,6 +1,8 @@
 package main
 
 import (
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+
 	"os"
 
 	"github.com/spf13/pflag"
