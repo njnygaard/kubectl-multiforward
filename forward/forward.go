@@ -15,7 +15,6 @@ import (
 
 	"github.com/jedib0t/go-pretty/table"
 	"github.com/jedib0t/go-pretty/text"
-	"github.com/sirupsen/logrus"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,25 +44,19 @@ type PortForwardAServiceRequest struct {
 }
 
 type ServiceMapping struct {
-	Port         int
-	Namespace    string
-	Identifier   string
-	ReadyChannel chan struct{}
-	StopChannel  <-chan struct{}
-	Error        error
+	Port       int
+	Namespace  string
+	Identifier string
+	Protocol   string
 }
 
 func Forward(services map[string]ServiceMapping) {
-	logger := logrus.New()
 
 	config, err := config()
 	if err != nil {
-		logger.Error(err)
+		fmt.Println(err)
 		os.Exit(1)
 	}
-
-	// var readyChannels []chan struct{}
-	// var stopChannels []chan struct{}
 
 	stream := genericclioptions.IOStreams{
 		// Typically the forwarding is noisy, we can quiet that here.
@@ -82,23 +75,20 @@ func Forward(services map[string]ServiceMapping) {
 		// sig := <-sigs
 		<-sigs
 		fmt.Println()
-		logger.Info("Bye...")
-		// for _, v := range services {
-		// 	defer close(v.StopChannel)
-		// }
+		fmt.Print("Bye...")
 		syncGroup.Done()
 		os.Exit(0)
 
 	}()
 
-	// var serviceGroup sync.WaitGroup
+	var readyChannels []chan struct{}
+	var servicesNotFound []string
 
 	for _, mapping := range services {
 
-		// serviceGroup.Add(1)
-
-		mapping.ReadyChannel = make(chan struct{})
-		mapping.StopChannel = make(chan struct{})
+		readyCh := make(chan struct{})
+		readyChannels = append(readyChannels, readyCh)
+		stopCh := make(<-chan struct{})
 
 		go func(srv string, m ServiceMapping, r chan struct{}, s <-chan struct{}) (err error) {
 
@@ -108,23 +98,17 @@ func Forward(services map[string]ServiceMapping) {
 
 			clientset, err = kubernetes.NewForConfig(config)
 			if err != nil {
-				// defer sg.Done()
 				return
 			}
 
 			svc, err = clientset.CoreV1().Services(m.Namespace).Get(context.TODO(), srv, opts)
 			if err != nil {
-				logger.Error(err)
-				// defer sg.Done()
-				// m.ReadyChannel <- struct{}{}
-				close(m.ReadyChannel)
+				fmt.Println(err)
+				close(r)
+				servicesNotFound = append(servicesNotFound, srv)
 				return
 			}
 
-			// We waited to find the services, now they forward.
-			// sg.Done()
-
-			logger.Infof("forwarding to %s", srv)
 			err = PortForwardAService(config, PortForwardAServiceRequest{
 				RestConfig:  config,
 				Service:     *svc,
@@ -135,55 +119,33 @@ func Forward(services map[string]ServiceMapping) {
 				ReadyCh:     r,
 			})
 			if err != nil {
-				logger.Error(err)
+				fmt.Println(err)
 				return
 			}
 
 			return
 
-		}(mapping.Identifier, mapping, mapping.ReadyChannel, mapping.StopChannel)
+		}(mapping.Identifier, mapping, readyCh, stopCh)
 
-	}
-
-	// logger.Warn("Waiting for service group")
-	// serviceGroup.Wait()
-	// logger.Warn("Waiting complete.")
-
-	// for _, v := range services {
-	// 	for range v.ReadyChannel {
-	// 		<-v.ReadyChannel
-	// 		logger.Info("got ready for %s", v.Identifier)
-	// 	}
-	// }
-
-	var readyChannels []chan struct{}
-	for _, v := range services {
-		readyChannels = append(readyChannels, v.ReadyChannel)
 	}
 
 	for i := range readyChannels {
 		for range readyChannels[i] {
 			<-readyChannels[i]
-			logger.Info("ranging over channel")
 		}
 	}
 
-	printTable(services)
+	printTable(services, servicesNotFound)
 	syncGroup.Wait()
 
 }
 
-func printTable(services map[string]ServiceMapping) {
+func printTable(services map[string]ServiceMapping, servicesNotFound []string) {
 	t := table.NewWriter()
 
 	for service, mapping := range services {
-		protocol := "http"
-		if strings.Contains(mapping.Identifier, "elastic") {
-			protocol = "https"
-		}
-
-		if mapping.Error == nil {
-			t.AppendRow(table.Row{service, fmt.Sprintf("%s://localhost:%d", protocol, mapping.Port)})
+		if !contains(servicesNotFound, mapping.Identifier) {
+			t.AppendRow(table.Row{service, fmt.Sprintf("%s://localhost:%d", mapping.Protocol, mapping.Port)})
 		}
 	}
 
@@ -276,4 +238,13 @@ func homeDir() string {
 	}
 
 	return os.Getenv("USERPROFILE") // windows
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }

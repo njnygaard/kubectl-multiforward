@@ -32,6 +32,7 @@ type Service struct {
 	Port        uint
 	Namespace   string
 	Name        string
+	Protocol    string
 }
 
 // NewCmdNamespace provides a cobra command wrapping NamespaceOptions
@@ -44,8 +45,6 @@ func NewCmdNamespace(streams genericclioptions.IOStreams) *cobra.Command {
 		Example:      "kubectl multiforward [group]",
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) (err error) {
-
-			// logger := logrus.New()
 
 			var config Config
 
@@ -72,6 +71,17 @@ func NewCmdNamespace(streams genericclioptions.IOStreams) *cobra.Command {
 				return fmt.Errorf(errGroupNotSpecified, groupNames)
 			}
 
+			var found bool
+			for _, v := range config.Groups {
+				if v.Name == args[0] {
+					found = true
+				}
+			}
+
+			if !found {
+				return fmt.Errorf(errGroupNotSpecified, groupNames)
+			}
+
 			var serviceGroup []Service
 
 			for _, v := range config.Groups {
@@ -80,20 +90,14 @@ func NewCmdNamespace(streams genericclioptions.IOStreams) *cobra.Command {
 				}
 			}
 
-			// TODO Populate from configuration
-			var serviceMapping = map[string]forward.ServiceMapping{
-				// "Alertmanager":  {Port: 9093, Namespace: "monitoring-prometheus", Identifier: "alertmanager-operated"},
-				// "Prometheus":    {Port: 9090, Namespace: "monitoring-prometheus", Identifier: "prometheus-operated"},
-				// "Grafana":       {Port: 3000, Namespace: "monitoring-prometheus", Identifier: "prometheus-staging-grafana"},
-				// "Kibana":        {Port: 5601, Namespace: "monitoring-eck", Identifier: "kibana-kb-http"},
-				// "Elasticsearch": {Port: 9200, Namespace: "monitoring-eck", Identifier: "elasticsearch-es-http"},
-			}
+			var serviceMapping = map[string]forward.ServiceMapping{}
 
 			for _, v := range serviceGroup {
 				var mapping forward.ServiceMapping
 				mapping.Identifier = v.Name
 				mapping.Namespace = v.Namespace
 				mapping.Port = int(v.Port)
+				mapping.Protocol = v.Protocol
 				serviceMapping[v.DisplayName] = mapping
 			}
 

@@ -1,23 +1,55 @@
 groups:
-  - production:
+  - name: production
     services:
       - displayName: Alertmanager
         port: 9093
         namespace: monitoring-prometheus
         name: alertmanager-operated
+        protocol: http
       - displayName: Prometheus
         port: 9090
         namespace: monitoring-prometheus
         name: prometheus-operated
+        protocol: http
       - displayName: Grafana
         port: 3000
         namespace: monitoring-prometheus
         name: prometheus-production-grafana
+        protocol: http
       - displayName: Kibana
         port: 5601
         namespace: monitoring-eck
         name: kibana-kb-http
+        protocol: http
       - displayName: Elasticsearch
         port: 9200
         namespace: monitoring-eck
         name: elasticsearch-es-http
+        protocol: https
+  - name: staging
+    services:
+      - displayName: Alertmanager
+        port: 9093
+        namespace: monitoring-prometheus
+        name: alertmanager-operated
+        protocol: http
+      - displayName: Prometheus
+        port: 9090
+        namespace: monitoring-prometheus
+        name: prometheus-operated
+        protocol: http
+      - displayName: Grafana
+        port: 3000
+        namespace: monitoring-prometheus
+        name: prometheus-staging-grafana
+        protocol: http
+      - displayName: Kibana
+        port: 5601
+        namespace: monitoring-eck
+        name: kibana-kb-http
+        protocol: http
+      - displayName: Elasticsearch
+        port: 9200
+        namespace: monitoring-eck
+        name: elasticsearch-es-http
+        protocol: https
