@@ -27,25 +27,25 @@ package: windows darwin-arm darwin-amd linux
 
 windows:
 	$(WINDOWS) -o $(WINDOWS_PATH)/ $(GOTARGET)
-	@zip $(WINDOWS_ARTIFACT).zip $(WINDOWS_ARTIFACT).exe
+	@zip $(WINDOWS_ARTIFACT)-windows-amd64.zip $(WINDOWS_ARTIFACT).exe
 	@openssl dgst -r -sha256 $(WINDOWS_ARTIFACT).exe |cut -d ' ' -f1 > $(WINDOWS_PATH)/sig
 	@rm $(WINDOWS_ARTIFACT).exe
 
 darwin-arm:
 	$(MACARM) -o $(MACARM_PATH)/ $(GOTARGET)
-	@tar -czvf $(MACARM_ARTIFACT).tar.gz $(MACARM_ARTIFACT)
+	@tar -czvf $(MACARM_ARTIFACT)-darwin-arm64.tar.gz $(MACARM_ARTIFACT)
 	@openssl dgst -r -sha256 $(MACARM_ARTIFACT) |cut -d ' ' -f1 > $(MACARM_PATH)/sig
 	@rm $(MACARM_ARTIFACT)
 
 darwin-amd:
 	$(MACAMD) -o $(MACAMD_PATH)/ $(GOTARGET)
-	@tar -czvf $(MACAMD_ARTIFACT).tar.gz $(MACAMD_ARTIFACT)
+	@tar -czvf $(MACAMD_ARTIFACT)-darwin-amd64.tar.gz $(MACAMD_ARTIFACT)
 	@openssl dgst -r -sha256 $(MACAMD_ARTIFACT) |cut -d ' ' -f1 > $(MACAMD_PATH)/sig
 	@rm $(MACAMD_ARTIFACT)
 
 linux:
 	$(LINUX) -o $(LINUX_PATH)/ $(GOTARGET)
-	@tar -czvf $(LINUX_ARTIFACT).tar.gz $(LINUX_ARTIFACT)
+	@tar -czvf $(LINUX_ARTIFACT)-linux-amd64.tar.gz $(LINUX_ARTIFACT)
 	@openssl dgst -r -sha256 $(LINUX_ARTIFACT) |cut -d ' ' -f1 > $(LINUX_PATH)/sig
 	@rm $(LINUX_ARTIFACT)
 
