@@ -40,8 +40,34 @@ func NewCmdNamespace(streams genericclioptions.IOStreams) *cobra.Command {
 	// o := NewNamespaceOptions(streams)
 
 	cmd := &cobra.Command{
-		Use:          "multiforward <group>",
-		Short:        "forward to services specified in ~/.multiforward.yaml or .multiforward.yaml",
+		Use:   "multiforward <group>",
+		Short: "forward to services specified in ~/.multiforward.yaml or .multiforward.yaml",
+		Long: `
+An example format for your local config file (~/.multiforward.yaml or .multiforward.yaml) can be found here: https://github.com/njnygaard/kubectl-multiforward/blob/master/.multiforward.example.yaml
+
+Or you can reference the following YAML structure where 'displayName' is a human-readable handle and 'name' and 'namespace' identify the Kubernetes resource.
+
+groups:
+  - name: production
+    services:
+      - displayName: Alertmanager
+        port: 9093
+        namespace: monitoring-prometheus
+        name: alertmanager-operated
+        protocol: http
+      - displayName: Prometheus
+        port: 9090
+        namespace: monitoring-prometheus
+        name: prometheus-operated
+        protocol: http
+  - name: staging
+    services:
+      - displayName: Elasticsearch
+        port: 9200
+        namespace: monitoring-eck
+        name: elasticsearch-es-http
+        protocol: https
+`,
 		Example:      "kubectl multiforward [group]",
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) (err error) {
