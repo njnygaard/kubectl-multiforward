@@ -94,6 +94,8 @@ groups:
 			}
 
 			if len(args) == 0 || args[0] == "" {
+				c.Help()
+				fmt.Println()
 				return fmt.Errorf(errGroupNotSpecified, groupNames)
 			}
 
@@ -133,9 +135,7 @@ groups:
 		},
 	}
 
-	// Might need this
-	// cmd.Flags().BoolVar(&o.listNamespaces, "list", o.listNamespaces, "if true, print the list of all namespaces in the current KUBECONFIG")
-	// o.configFlags.AddFlags(cmd.Flags())
+	cmd.Flags().BoolP("help", "h", false, fmt.Sprintf("help for %s, contains config locations and sample configuration", cmd.Name()))
 
 	return cmd
 }
