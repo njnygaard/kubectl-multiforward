@@ -219,6 +219,7 @@ func config() (*rest.Config, error) {
 
 	var kubeconfig *string
 
+	// TODO: this isn't really processed as a FLAG "--kubeconfig <some path>" anymore, it just ends up defaulting to ~/.kube/config
 	if home := homeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
@@ -226,6 +227,17 @@ func config() (*rest.Config, error) {
 	}
 
 	flag.Parse()
+
+	// OVERRIDE default if there is a KUBECONFIG ENV VAR SET
+	// BuidlConfigFromFlags doesn't handle a KUBECONFIG with multiple paths (: separated) as kubectl does
+	// So we will just default to the FIRST defined one on the list.
+	k := os.Getenv("KUBECONFIG")
+	if k != "" {
+		if strings.Contains(k, ":") {
+			k = strings.Split(k, ":")[0]
+		}
+		kubeconfig = &k
+	}
 
 	// use the current context in kubeconfig
 	return clientcmd.BuildConfigFromFlags("", *kubeconfig)
