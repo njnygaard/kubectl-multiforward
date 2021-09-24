@@ -12,29 +12,29 @@ spec:
   caveats: |
     You should have ~/.multiforward.yaml or ./.multiforward.yaml configured. See `multiforward --help` for format details.
   platforms:
-  - uri: https://github.com/njnygaard/kubectl-multiforward/releases/download/v0.0.4/kubectl-multiforward-linux-amd64.tar.gz
-    sha256: ed90bcaf787d04bf46e0d6f8d25701fcab193b42385949846ab6f9f8fc75d034
+  - uri: https://github.com/njnygaard/kubectl-multiforward/releases/download/v0.0.5/kubectl-multiforward-linux-amd64.tar.gz
+    sha256: f3f13e6331e77cc74f8e6b32c9ef7a34f586236d94f65c21bb8949ad13571e28
     bin: kubectl-multiforward
     selector:
       matchLabels:
         os: linux
         arch: amd64
-  - uri: https://github.com/njnygaard/kubectl-multiforward/releases/download/v0.0.4/kubectl-multiforward-darwin-amd64.tar.gz
-    sha256: a5680c9903ba3109b740ace03fb1bf1c76b3b08bd4ab3a60da7be27e7ea4c3ce
+  - uri: https://github.com/njnygaard/kubectl-multiforward/releases/download/v0.0.5/kubectl-multiforward-darwin-amd64.tar.gz
+    sha256: 7f8789e1feaf03c0d538741b17a9095053f6f429007e0f1be09442ba856485d0
     bin: kubectl-multiforward
     selector:
       matchLabels:
         os: darwin
         arch: amd64
-  - uri: https://github.com/njnygaard/kubectl-multiforward/releases/download/v0.0.4/kubectl-multiforward-darwin-arm64.tar.gz
-    sha256: 542776e8f1a0bcaef4e0f0edf9cc152b330974f66c8c8747298f3bc0f1b726d4
+  - uri: https://github.com/njnygaard/kubectl-multiforward/releases/download/v0.0.5/kubectl-multiforward-darwin-arm64.tar.gz
+    sha256: ea92441551fe6c5b40c41c6ec1abf73a640ef6c0a7a0a32591ecbbe4686d1f82
     bin: kubectl-multiforward
     selector:
       matchLabels:
         os: darwin
         arch: arm64
-  - uri: https://github.com/njnygaard/kubectl-multiforward/releases/download/v0.0.4/kubectl-multiforward-windows-amd64.zip
-    sha256: 342478c2042f69b5f7e488bcf56b486122492d03d15b17d7af1d607d0d0101e9
+  - uri: https://github.com/njnygaard/kubectl-multiforward/releases/download/v0.0.5/kubectl-multiforward-windows-amd64.zip
+    sha256: 5b309d67f89c25111708e5edbbc310ff893da1953e89cc15bf125770359e20d9
     bin: kubectl-multiforward
     selector:
       matchLabels:
