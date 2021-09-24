@@ -27,25 +27,25 @@ package: windows darwin-arm darwin-amd linux
 
 windows:
 	$(WINDOWS) -o $(WINDOWS_PATH)/ $(GOTARGET)
-	@zip $(WINDOWS_ARTIFACT)-windows-amd64.zip $(WINDOWS_ARTIFACT).exe
+	cd $(WINDOWS_PATH); zip kubectl-multiforward-windows-amd64.zip kubectl-multiforward.exe
 	@openssl dgst -r -sha256 $(WINDOWS_ARTIFACT)-windows-amd64.zip |cut -d ' ' -f1 > $(WINDOWS_PATH)/sig
 	@rm $(WINDOWS_ARTIFACT).exe
 
 darwin-arm:
 	$(MACARM) -o $(MACARM_PATH)/ $(GOTARGET)
-	@tar -czvf $(MACARM_ARTIFACT)-darwin-arm64.tar.gz $(MACARM_ARTIFACT)
+	cd $(MACARM_PATH); tar -czvf kubectl-multiforward-darwin-arm64.tar.gz kubectl-multiforward
 	@openssl dgst -r -sha256 $(MACARM_ARTIFACT)-darwin-arm64.tar.gz |cut -d ' ' -f1 > $(MACARM_PATH)/sig
 	@rm $(MACARM_ARTIFACT)
 
 darwin-amd:
 	$(MACAMD) -o $(MACAMD_PATH)/ $(GOTARGET)
-	@tar -czvf $(MACAMD_ARTIFACT)-darwin-amd64.tar.gz $(MACAMD_ARTIFACT)
+	cd $(MACAMD_PATH); tar -czvf kubectl-multiforward-darwin-amd64.tar.gz kubectl-multiforward
 	@openssl dgst -r -sha256 $(MACAMD_ARTIFACT)-darwin-amd64.tar.gz |cut -d ' ' -f1 > $(MACAMD_PATH)/sig
 	@rm $(MACAMD_ARTIFACT)
 
 linux:
 	$(LINUX) -o $(LINUX_PATH)/ $(GOTARGET)
-	@tar -czvf $(LINUX_ARTIFACT)-linux-amd64.tar.gz $(LINUX_ARTIFACT)
+	cd $(LINUX_PATH); tar -czvf kubectl-multiforward-linux-amd64.tar.gz kubectl-multiforward
 	@openssl dgst -r -sha256 $(LINUX_ARTIFACT)-linux-amd64.tar.gz |cut -d ' ' -f1 > $(LINUX_PATH)/sig
 	@rm $(LINUX_ARTIFACT)
 
