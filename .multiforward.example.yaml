@@ -2,54 +2,64 @@ groups:
   - name: production
     services:
       - displayName: Alertmanager
-        port: 9093
+        localPort: 29093
+        servicePort: 9093
         namespace: monitoring-prometheus
         name: alertmanager-operated
         protocol: http
       - displayName: Prometheus
-        port: 9090
+        localPort: 29090
+        servicePort: 9090
         namespace: monitoring-prometheus
         name: prometheus-operated
         protocol: http
       - displayName: Grafana
-        port: 3000
+        localPort: 23000
+        servicePort: 3000
         namespace: monitoring-prometheus
         name: prometheus-production-grafana
         protocol: http
       - displayName: Kibana
-        port: 5601
+        localPort: 25601
+        servicePort: 5601
         namespace: monitoring-eck
         name: kibana-kb-http
         protocol: http
       - displayName: Elasticsearch
-        port: 9200
+        localPort: 29200
+        servicePort: 9200
         namespace: monitoring-eck
         name: elasticsearch-es-http
         protocol: https
   - name: staging
     services:
       - displayName: Alertmanager
-        port: 9093
+        localPort: 28093
+        servicePort: 9093
         namespace: monitoring-prometheus
         name: alertmanager-operated
         protocol: http
       - displayName: Prometheus
-        port: 9090
+        localPort: 28090
+        servicePort: 9090
         namespace: monitoring-prometheus
         name: prometheus-operated
         protocol: http
       - displayName: Grafana
-        port: 3000
+        localPort: 22000
+        servicePort: 3000
         namespace: monitoring-prometheus
         name: prometheus-staging-grafana
         protocol: http
       - displayName: Kibana
-        port: 5601
+        localPort: 24601
+        servicePort: 5601
         namespace: monitoring-eck
         name: kibana-kb-http
         protocol: http
       - displayName: Elasticsearch
-        port: 9200
+        localPort: 28200
+        servicePort: 9200
         namespace: monitoring-eck
         name: elasticsearch-es-http
         protocol: https

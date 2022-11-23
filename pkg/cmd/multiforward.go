@@ -29,7 +29,8 @@ type Group struct {
 
 type Service struct {
 	DisplayName string
-	Port        uint
+	LocalPort   uint
+	ServicePort uint
 	Namespace   string
 	Name        string
 	Protocol    string
@@ -51,19 +52,22 @@ groups:
   - name: production
     services:
       - displayName: Alertmanager
-        port: 9093
+        localPort: 29093
+        servicePort: 9093
         namespace: monitoring-prometheus
         name: alertmanager-operated
         protocol: http
       - displayName: Prometheus
-        port: 9090
+        localPort: 29090
+        servicePort: 9090
         namespace: monitoring-prometheus
         name: prometheus-operated
         protocol: http
   - name: staging
     services:
       - displayName: Elasticsearch
-        port: 9200
+        localPort: 29200
+        servicePort: 9200
         namespace: monitoring-eck
         name: elasticsearch-es-http
         protocol: https
@@ -124,7 +128,8 @@ groups:
 				var mapping forward.ServiceMapping
 				mapping.Identifier = v.Name
 				mapping.Namespace = v.Namespace
-				mapping.Port = int(v.Port)
+				mapping.ServicePort = int(v.ServicePort)
+				mapping.LocalPort = int(v.LocalPort)
 				mapping.Protocol = v.Protocol
 				serviceMapping[v.DisplayName] = mapping
 			}
