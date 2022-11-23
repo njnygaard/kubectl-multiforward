@@ -44,10 +44,11 @@ type PortForwardAServiceRequest struct {
 }
 
 type ServiceMapping struct {
-	Port       int
-	Namespace  string
-	Identifier string
-	Protocol   string
+	LocalPort   int
+	ServicePort int
+	Namespace   string
+	Identifier  string
+	Protocol    string
 }
 
 func Forward(services map[string]ServiceMapping) {
@@ -112,8 +113,8 @@ func Forward(services map[string]ServiceMapping) {
 			err = PortForwardAService(config, PortForwardAServiceRequest{
 				RestConfig:  config,
 				Service:     *svc,
-				LocalPort:   m.Port,
-				ServicePort: m.Port,
+				LocalPort:   m.LocalPort,
+				ServicePort: m.ServicePort,
 				Streams:     stream,
 				StopCh:      s,
 				ReadyCh:     r,
@@ -145,7 +146,7 @@ func printTable(services map[string]ServiceMapping, servicesNotFound []string) {
 
 	for service, mapping := range services {
 		if !contains(servicesNotFound, mapping.Identifier) {
-			t.AppendRow(table.Row{service, fmt.Sprintf("%s://localhost:%d", mapping.Protocol, mapping.Port)})
+			t.AppendRow(table.Row{service, fmt.Sprintf("%s://localhost:%d", mapping.Protocol, mapping.LocalPort)})
 		}
 	}
 
