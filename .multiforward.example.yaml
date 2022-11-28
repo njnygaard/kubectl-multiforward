@@ -2,18 +2,21 @@ groups:
   - name: production
     services:
       - displayName: Alertmanager
+        localAddress: auto
         localPort: 29093
         servicePort: 9093
         namespace: monitoring-prometheus
         name: alertmanager-operated
         protocol: http
       - displayName: Prometheus
+        localAddress: localhost
         localPort: 29090
         servicePort: 9090
         namespace: monitoring-prometheus
         name: prometheus-operated
         protocol: http
       - displayName: Grafana
+        localAddress: 172.16.16.16
         localPort: 23000
         servicePort: 3000
         namespace: monitoring-prometheus
