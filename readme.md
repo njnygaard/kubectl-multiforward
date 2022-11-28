@@ -18,3 +18,8 @@ kubectl multiforward staging
 └───────────────┴────────────────────────┘
 Monitoring Resources... ^C to exit
 ```
+## Configuration
+ - localAddress : (Optional) if you want to discover you local IP, please use 'auto'. You can set anything you want inside
+ - localPort : the local machine port on which the service will be published 
+ - servicePort : the service exposed port 
+ 

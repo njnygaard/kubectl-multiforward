@@ -67,8 +67,8 @@ groups:
   - name: production
     services:
       - displayName: Alertmanager
-	  	localAddress: 172.16.65.117
-	  	localPort: 29093
+        localAddress: 172.16.65.117
+        localPort: 29093
         servicePort: 9093
         namespace: monitoring-prometheus
         name: alertmanager-operated
@@ -147,10 +147,12 @@ groups:
 				mapping.Namespace = v.Namespace
 				mapping.ServicePort = int(v.ServicePort)
 				mapping.LocalPort = int(v.LocalPort)
-				if( v.LocalAddress == "") {
+				if( v.LocalAddress == "auto") {
 					mapping.LocalAddress = GetOutboundIP()
-				} else {
+				} else if ( len(v.LocalAddress) > 0){
 					mapping.LocalAddress = v.LocalAddress
+				} else {
+					mapping.LocalAddress = "localhost"
 				}
 				mapping.Protocol = v.Protocol
 				serviceMapping[v.DisplayName] = mapping
