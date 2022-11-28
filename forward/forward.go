@@ -36,6 +36,7 @@ import (
 type PortForwardAServiceRequest struct {
 	RestConfig  *rest.Config
 	Service     v1.Service
+	LocalAddress   string
 	LocalPort   int
 	ServicePort int
 	Streams     genericclioptions.IOStreams
@@ -44,6 +45,7 @@ type PortForwardAServiceRequest struct {
 }
 
 type ServiceMapping struct {
+	LocalAddress   string
 	LocalPort   int
 	ServicePort int
 	Namespace   string
@@ -113,6 +115,7 @@ func Forward(services map[string]ServiceMapping) {
 			err = PortForwardAService(config, PortForwardAServiceRequest{
 				RestConfig:  config,
 				Service:     *svc,
+				LocalAddress: m.LocalAddress,
 				LocalPort:   m.LocalPort,
 				ServicePort: m.ServicePort,
 				Streams:     stream,
@@ -146,7 +149,7 @@ func printTable(services map[string]ServiceMapping, servicesNotFound []string) {
 
 	for service, mapping := range services {
 		if !contains(servicesNotFound, mapping.Identifier) {
-			t.AppendRow(table.Row{service, fmt.Sprintf("%s://localhost:%d", mapping.Protocol, mapping.LocalPort)})
+			t.AppendRow(table.Row{service, fmt.Sprintf("%s://%s:%d", mapping.Protocol, mapping.LocalAddress, mapping.LocalPort)})
 		}
 	}
 
@@ -196,7 +199,7 @@ func PortForwardAService(config *rest.Config, req PortForwardAServiceRequest) (e
 	}
 
 	path = fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/portforward", req.Service.Namespace, podName)
-	hostIP = strings.TrimLeft(req.RestConfig.Host, "htps:/")
+	hostIP = strings.TrimLeft(req.RestConfig.Host, "https:/")
 
 	transport, upgrader, err := spdy.RoundTripperFor(req.RestConfig)
 	if err != nil {
@@ -204,7 +207,7 @@ func PortForwardAService(config *rest.Config, req PortForwardAServiceRequest) (e
 	}
 
 	dialer = spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, &url.URL{Scheme: "https", Path: path, Host: hostIP})
-	fw, err = portforward.New(dialer, []string{fmt.Sprintf("%d:%d", req.LocalPort, req.ServicePort)}, req.StopCh, req.ReadyCh, req.Streams.Out, req.Streams.ErrOut)
+	fw, err = portforward.NewOnAddresses(dialer, []string{req.LocalAddress}, []string{fmt.Sprintf("%d:%d", req.LocalPort, req.ServicePort)}, req.StopCh, req.ReadyCh, req.Streams.Out, req.Streams.ErrOut)
 	if err != nil {
 		return err
 	}
