@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"fmt"
-
+    "log"
+    "net"
 	"github.com/njnygaard/kubectl-multiforward/forward"
 
 	"github.com/spf13/cobra"
@@ -29,11 +30,25 @@ type Group struct {
 
 type Service struct {
 	DisplayName string
+	LocalAddress   string
 	LocalPort   uint
 	ServicePort uint
 	Namespace   string
 	Name        string
 	Protocol    string
+}
+
+// Get preferred outbound ip of this machine
+func GetOutboundIP() string {
+    conn, err := net.Dial("udp", "8.8.8.8:80")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer conn.Close()
+
+    localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+    return localAddr.IP.String()
 }
 
 // NewCmdNamespace provides a cobra command wrapping NamespaceOptions
@@ -52,7 +67,8 @@ groups:
   - name: production
     services:
       - displayName: Alertmanager
-        localPort: 29093
+	  	localAddress: 172.16.65.117
+	  	localPort: 29093
         servicePort: 9093
         namespace: monitoring-prometheus
         name: alertmanager-operated
@@ -126,10 +142,16 @@ groups:
 
 			for _, v := range serviceGroup {
 				var mapping forward.ServiceMapping
+
 				mapping.Identifier = v.Name
 				mapping.Namespace = v.Namespace
 				mapping.ServicePort = int(v.ServicePort)
 				mapping.LocalPort = int(v.LocalPort)
+				if( v.LocalAddress == "") {
+					mapping.LocalAddress = GetOutboundIP()
+				} else {
+					mapping.LocalAddress = v.LocalAddress
+				}
 				mapping.Protocol = v.Protocol
 				serviceMapping[v.DisplayName] = mapping
 			}
